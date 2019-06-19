@@ -31,8 +31,11 @@ end
 class JunosCommitTransactionHandler < Chef::Handler
   def report
     # Ensure handler is no-op in why-run mode and non-Junos platforms.
-    if (node['platform'] == 'junos' || (node['platform_version'].include? 'JNPR')) && !Chef::Config[:why_run]
+# @TODO: Check platform for evo
+    #if (node['platform'] == 'junos' || (node['platform_version'].include? 'JNPR')) && !Chef::Config[:why_run]
+    if !Chef::Config[:why_run]
       begin
+          Chef::Log.info('Beginning commit process')
         # on successful Chef-runs commit the transaction
         if success?
           commit_log_comment = nil
@@ -47,6 +50,7 @@ class JunosCommitTransactionHandler < Chef::Handler
           end
 
           Netdev::Junos::ApiTransport.instance.commit_transaction!(commit_log_comment)
+         Chef::Log.info('Commit successful')
         # on failed Chef-runs rollback the transaction
         else
           Netdev::Junos::ApiTransport.instance.rollback!

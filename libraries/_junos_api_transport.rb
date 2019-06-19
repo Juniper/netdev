@@ -101,17 +101,18 @@ module Netdev
 
       def open_connection!
         # Create a connection to the NETCONF service
-        # Create a connection to the NETCONF service
         if IS_CONTAINER
           # In case of docker container, open a NETCONF/SSH session
           # NETCONF_USER refers to the login username configured for puppet operations
-          login = { :target => 'localhost', :username => ENV['NETCONF_USER'],  }
+          login = { :target => 'localhost', :username => ENV['NETCONF_USER'], \
+                    :port => ENV['NETCONF_PORT'] ? ENV['NETCONF_PORT'].to_i : 22, }
           @transport = Netconf::SSH.new(login)
         else
           # Else, open an IOProc session
           @transport = Netconf::IOProc.new(Hash[timeout: 600])
         end
 
+        @transport.open
         # enable basic Junos EZ Stdlib providers
         ::Junos::Ez::Provider(@transport)
         ::Junos::Ez::Config::Utils(@transport, :config)
